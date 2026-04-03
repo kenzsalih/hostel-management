@@ -1,26 +1,47 @@
 // Global error handler middleware (use at the very end)
 const errorHandler = (error, req, res, next) => {
-  console.error('Error:', error.message);
+  const status = error.statusCode || error.status || 500;
+  let message = error.message || 'Internal Server Error';
+  let code = error.code || 'INTERNAL_ERROR';
+  let details;
 
   // Mongoose validation error
   if (error.name === 'ValidationError') {
-    return res.status(400).json({ error: error.message });
+    message = 'Validation failed';
+    code = 'VALIDATION_ERROR';
+    details = Object.values(error.errors).map((item) => item.message);
   }
 
   // Mongoose cast error (invalid ID)
-  if (error.name === 'CastError') {
-    return res.status(400).json({ error: 'Invalid ID format' });
+  if (error.name === 'CastError' && !details) {
+    message = 'Invalid ID format';
+    code = 'INVALID_ID';
   }
 
   // Duplicate key error
-  if (error.code === 11000) {
+  if (error.code === 11000 && !details) {
     const field = Object.keys(error.keyPattern)[0];
-    return res.status(400).json({ error: `${field} already exists` });
+    message = `${field} already exists`;
+    code = 'DUPLICATE_KEY';
   }
 
-  // Default server error
-  res.status(error.status || 500).json({
-    error: error.message || 'Internal Server Error',
+  if (error.type === 'validation' && error.errors) {
+    message = 'Validation failed';
+    code = 'VALIDATION_ERROR';
+    details = error.errors;
+  }
+
+  if (status >= 500) {
+    console.error('Error:', error);
+  }
+
+  res.status(status).json({
+    success: false,
+    error: {
+      code,
+      message,
+      ...(details ? { details } : {}),
+    },
   });
 };
 

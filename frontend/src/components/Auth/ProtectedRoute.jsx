@@ -1,15 +1,20 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { isAuthenticated, getStoredUser } from '../../services/auth.service';
+import { useAuth } from '../../hooks/useAuth';
 
 // Protected route component
 export const ProtectedRoute = ({ children, allowedRoles }) => {
-  if (!isAuthenticated()) {
+  const { user, isAuth, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div className="loading">Checking session...</div>;
+  }
+
+  if (!isAuth || !user) {
     return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles) {
-    const user = getStoredUser();
     if (!allowedRoles.includes(user?.role)) {
       return <Navigate to="/unauthorized" replace />;
     }

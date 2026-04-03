@@ -36,4 +36,7 @@ const announcementSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+announcementSchema.index({ role: 1, date: -1 });
+announcementSchema.index({ expiryDate: 1 });
+
 module.exports = mongoose.model('Announcement', announcementSchema);

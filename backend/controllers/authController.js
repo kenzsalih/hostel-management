@@ -1,51 +1,77 @@
 const User = require('../models/User');
 const { generateToken } = require('../config/jwt');
-const { isValidUsername, isValidPassword } = require('../utils/validators');
+const { AppError } = require('../utils/errors');
 
-// Register a new user
-const registerUser = async (req, res, next) => {
+const toSafeUser = (user) => ({
+  id: user._id,
+  name: user.name,
+  username: user.username,
+  role: user.role,
+  email: user.email,
+  rollNumber: user.rollNumber,
+});
+
+// Public registration is intentionally disabled.
+const registerUser = async (req, res) => {
+  return res.status(403).json({
+    success: false,
+    error: {
+      code: 'PUBLIC_REGISTRATION_DISABLED',
+      message: 'Public registration is disabled. Contact warden office for account creation.',
+    },
+  });
+};
+
+// Authorized account creation (warden, optionally mess secretary)
+const createUserByRole = async (req, res, next) => {
   try {
     const { name, username, password, role, email, rollNumber } = req.body;
+    const creatorRole = req.user.role;
 
-    // Validation
-    if (!name || !username || !password || !role) {
-      return res.status(400).json({ error: 'All fields are required' });
+    if (creatorRole === 'mess_secretary' && role !== 'student') {
+      throw new AppError('Mess secretary can only create student accounts', 403);
     }
 
-    if (!isValidUsername(username)) {
-      return res
-        .status(400)
-        .json({ error: 'Username must be 3-20 characters (alphanumeric and underscore)' });
+    if (role === 'warden' && creatorRole !== 'warden') {
+      throw new AppError('Only warden can create warden accounts', 403);
     }
 
-    if (!isValidPassword(password)) {
-      return res.status(400).json({
-        error: 'Password must be at least 6 characters with uppercase, lowercase, and number',
-      });
-    }
+    const normalizedUsername = username.toLowerCase();
+    const normalizedEmail = email?.toLowerCase();
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({
+      $or: [
+        { username: normalizedUsername },
+        ...(normalizedEmail ? [{ email: normalizedEmail }] : []),
+      ],
+    });
+
     if (existingUser) {
-      return res.status(409).json({ error: 'Username already exists' });
+      throw new AppError('User already exists with provided username/email', 409);
     }
 
-    // Create new user
-    const user = new User({ name, username, password, role, email, rollNumber });
+    if (rollNumber) {
+      const duplicateRoll = await User.findOne({ rollNumber });
+      if (duplicateRoll) {
+        throw new AppError('rollNumber already exists', 409);
+      }
+    }
+
+    const user = new User({
+      name,
+      username: normalizedUsername,
+      password,
+      role,
+      email: normalizedEmail,
+      rollNumber,
+    });
+
     await user.save();
 
-    // Generate token
-    const token = generateToken(user._id, user.role);
-
     res.status(201).json({
-      message: 'User registered successfully',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        username: user.username,
-        role: user.role,
-      },
+      success: true,
+      message: 'User account created successfully',
+      user: toSafeUser(user),
     });
   } catch (error) {
     next(error);
@@ -56,35 +82,28 @@ const registerUser = async (req, res, next) => {
 const loginUser = async (req, res, next) => {
   try {
     const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
-    }
+    const normalizedUsername = username.toLowerCase();
 
     // Find user and include password field
-    const user = await User.findOne({ username }).select('+password');
+    const user = await User.findOne({ username: normalizedUsername }).select('+password');
     if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      throw new AppError('Invalid credentials', 401);
     }
 
     // Check password
     const isPasswordCorrect = await user.comparePassword(password);
     if (!isPasswordCorrect) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      throw new AppError('Invalid credentials', 401);
     }
 
     // Generate token
-    const token = generateToken(user._id, user.role);
+    const token = generateToken(user);
 
     res.json({
+      success: true,
       message: 'Login successful',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        username: user.username,
-        role: user.role,
-      },
+      user: toSafeUser(user),
     });
   } catch (error) {
     next(error);
@@ -96,10 +115,13 @@ const getCurrentUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.userId);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      throw new AppError('User not found', 404);
     }
 
-    res.json(user);
+    res.json({
+      success: true,
+      user: toSafeUser(user),
+    });
   } catch (error) {
     next(error);
   }
@@ -107,6 +129,7 @@ const getCurrentUser = async (req, res, next) => {
 
 module.exports = {
   registerUser,
+  createUserByRole,
   loginUser,
   getCurrentUser,
 };

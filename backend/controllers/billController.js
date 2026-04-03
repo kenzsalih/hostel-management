@@ -1,6 +1,7 @@
 const Bill = require('../models/Bill');
 const User = require('../models/User');
-const { calculateExpenseForPeriod, calculateBillPerStudent, getActiveMessCutsCount } = require('../utils/calculateBill');
+const { calculateExpenseForPeriod, calculateBillPerStudent } = require('../utils/calculateBill');
+const { AppError } = require('../utils/errors');
 
 // Warden: Generate bills for all students
 const generateBills = async (req, res, next) => {
@@ -28,6 +29,15 @@ const generateBills = async (req, res, next) => {
     // Create bills for each student
     const bills = [];
     for (const student of students) {
+      const existingBill = await Bill.findOne({
+        studentUsername: student.username,
+        month,
+      });
+
+      if (existingBill) {
+        continue;
+      }
+
       const bill = new Bill({
         studentUsername: student.username,
         month,
@@ -42,7 +52,7 @@ const generateBills = async (req, res, next) => {
     }
 
     res.status(201).json({
-      message: `Bills generated for ${totalStudents} students`,
+      message: `Bills generated for ${bills.length} students`,
       month,
       totalExpense,
       amountPerStudent: amountDue,
@@ -58,6 +68,11 @@ const generateBills = async (req, res, next) => {
 const getStudentBills = async (req, res, next) => {
   try {
     const { username } = req.params;
+    const requester = req.user;
+
+    if (requester.role === 'student' && requester.username !== username) {
+      throw new AppError('Students can only access their own bills', 403);
+    }
 
     const bills = await Bill.find({ studentUsername: username }).sort({ generatedOn: -1 });
 
@@ -100,10 +115,15 @@ const getAllBills = async (req, res, next) => {
 const markBillAsPaid = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const requester = req.user;
 
     const bill = await Bill.findById(id);
     if (!bill) {
       return res.status(404).json({ error: 'Bill not found' });
+    }
+
+    if (requester.role === 'student' && bill.studentUsername !== requester.username) {
+      throw new AppError('Students can only pay their own bills', 403);
     }
 
     if (bill.status === 'paid') {

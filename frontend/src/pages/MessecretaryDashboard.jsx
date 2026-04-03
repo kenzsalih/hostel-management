@@ -1,30 +1,31 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '../components/Common';
 
 const MessecretaryDashboard = () => {
   return (
     <div className="dashboard">
-      <h1>📊 Mess Secretary Dashboard</h1>
+      <h1>Mess Secretary Dashboard</h1>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
         <Card title="✂️ Mess Cut Requests">
           <p>Approve or reject student mess cut requests.</p>
-          <a href="/secretary/messcuts" className="btn btn-primary">Manage Requests</a>
+          <Link to="/secretary/messcuts" className="btn btn-primary">Manage Requests</Link>
         </Card>
 
         <Card title="🛒 Add Groceries">
           <p>Record grocery purchases and expenses.</p>
-          <a href="/secretary/groceries" className="btn btn-primary">Add Items</a>
+          <Link to="/secretary/groceries" className="btn btn-primary">Add Items</Link>
         </Card>
 
         <Card title="💸 Track Expenses">
           <p>Monitor total mess expenses.</p>
-          <a href="/secretary/expenses" className="btn btn-primary">View Expenses</a>
+          <Link to="/secretary/expenses" className="btn btn-primary">View Expenses</Link>
         </Card>
 
         <Card title="📢 Post Announcement">
           <p>Create announcements for mess members.</p>
-          <a href="/secretary/announcement" className="btn btn-primary">Post New</a>
+          <Link to="/secretary/announcement" className="btn btn-primary">Post New</Link>
         </Card>
       </div>
     </div>

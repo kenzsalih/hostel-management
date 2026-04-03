@@ -33,6 +33,9 @@ const messCutSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+messCutSchema.index({ username: 1, fromDate: 1, toDate: 1 }, { unique: true });
+messCutSchema.index({ status: 1, createdAt: -1 });
+
 // Validate that toDate is after fromDate
 messCutSchema.pre('save', function (next) {
   if (this.toDate <= this.fromDate) {

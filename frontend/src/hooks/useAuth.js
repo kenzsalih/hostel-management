@@ -1,21 +1,12 @@
-import { useState, useEffect } from 'react';
-import { isAuthenticated, getStoredUser } from '../services/auth.service';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
-// Hook to manage authentication state
 export const useAuth = () => {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuth, setIsAuth] = useState(false);
+  const context = useContext(AuthContext);
 
-  useEffect(() => {
-    // Check if user is authenticated on mount
-    if (isAuthenticated()) {
-      const storedUser = getStoredUser();
-      setUser(storedUser);
-      setIsAuth(true);
-    }
-    setIsLoading(false);
-  }, []);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
 
-  return { user, isLoading, isAuth };
+  return context;
 };

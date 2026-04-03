@@ -1,30 +1,31 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '../components/Common';
 
 const StudentDashboard = () => {
   return (
     <div className="dashboard">
-      <h1>📊 Student Dashboard</h1>
+      <h1>Student Dashboard</h1>
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
         <Card title="📋 My Mess Cuts">
           <p>View and manage your mess cut requests.</p>
-          <a href="/student/messcut" className="btn btn-primary">View Details</a>
+          <Link to="/student/messcut" className="btn btn-primary">View Details</Link>
         </Card>
 
         <Card title="💰 My Bills">
           <p>Track and pay your mess bills.</p>
-          <a href="/student/bills" className="btn btn-primary">View Bills</a>
+          <Link to="/student/bills" className="btn btn-primary">View Bills</Link>
         </Card>
 
         <Card title="📢 Announcements">
           <p>Latest updates from mess management.</p>
-          <a href="/announcements" className="btn btn-primary">View All</a>
+          <Link to="/announcements" className="btn btn-primary">View All</Link>
         </Card>
 
         <Card title="💸 Expenses">
           <p>View current mess expenses breakdown.</p>
-          <a href="/student/expenses" className="btn btn-primary">View Expenses</a>
+          <Link to="/student/expenses" className="btn btn-primary">View Expenses</Link>
         </Card>
       </div>
     </div>

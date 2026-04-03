@@ -44,4 +44,8 @@ const grocerySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+grocerySchema.index({ date: -1 });
+grocerySchema.index({ category: 1, date: -1 });
+grocerySchema.index({ enteredBy: 1, date: -1 });
+
 module.exports = mongoose.model('Grocery', grocerySchema);

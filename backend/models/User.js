@@ -30,6 +30,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       lowercase: true,
       trim: true,
+      unique: true,
+      sparse: true,
     },
     rollNumber: {
       type: String, // For students
@@ -39,6 +41,10 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.index({ username: 1 }, { unique: true });
+userSchema.index({ email: 1 }, { unique: true, sparse: true });
+userSchema.index({ role: 1 });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth.middleware');
-const roleAuth = require('../middleware/roleAuth.middleware');
+const authorize = require('../middleware/authorize.middleware');
+const validateRequest = require('../middleware/validate.middleware');
+const {
+  groceriesCreateValidator,
+  groceriesDateRangeValidator,
+  idParamValidator,
+} = require('../validators/requestValidators');
 const {
   addGrocery,
   getAllGroceries,
@@ -10,15 +16,22 @@ const {
 } = require('../controllers/groceryController');
 
 // Mess Secretary: Add grocery
-router.post('/', authMiddleware, roleAuth(['mess_secretary']), addGrocery);
+router.post(
+  '/',
+  authMiddleware,
+  authorize(['mess_secretary']),
+  groceriesCreateValidator,
+  validateRequest,
+  addGrocery
+);
 
 // Get all groceries
 router.get('/', authMiddleware, getAllGroceries);
 
 // Get groceries by date range
-router.get('/range', authMiddleware, getGroceriesByDateRange);
+router.get('/range', authMiddleware, groceriesDateRangeValidator, validateRequest, getGroceriesByDateRange);
 
 // Delete grocery
-router.delete('/:id', authMiddleware, roleAuth(['mess_secretary']), deleteGrocery);
+router.delete('/:id', authMiddleware, authorize(['mess_secretary']), idParamValidator, validateRequest, deleteGrocery);
 
 module.exports = router;

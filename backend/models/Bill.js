@@ -49,4 +49,8 @@ const billSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+billSchema.index({ studentUsername: 1, month: 1 }, { unique: true });
+billSchema.index({ month: 1, status: 1 });
+billSchema.index({ generatedOn: -1 });
+
 module.exports = mongoose.model('Bill', billSchema);

@@ -1,6 +1,6 @@
 const MessCut = require('../models/MessCut');
-const User = require('../models/User');
 const { isValidDateRange } = require('../utils/validators');
+const { AppError } = require('../utils/errors');
 
 // Student: Create mess cut request
 const createMessCut = async (req, res, next) => {
@@ -14,6 +14,16 @@ const createMessCut = async (req, res, next) => {
 
     if (!isValidDateRange(fromDate, toDate)) {
       return res.status(400).json({ error: 'To date must be after from date' });
+    }
+
+    const duplicate = await MessCut.findOne({
+      username,
+      fromDate: new Date(fromDate),
+      toDate: new Date(toDate),
+    });
+
+    if (duplicate) {
+      throw new AppError('Duplicate mess cut request for same date range', 409);
     }
 
     const messCut = new MessCut({
@@ -37,10 +47,19 @@ const createMessCut = async (req, res, next) => {
 const getAllMessCuts = async (req, res, next) => {
   try {
     const { status, username } = req.query;
+    const requester = req.user;
 
     const filter = {};
+
+    if (requester.role === 'student') {
+      filter.username = requester.username;
+    }
+
+    if (username && requester.role !== 'student') {
+      filter.username = username;
+    }
+
     if (status) filter.status = status;
-    if (username) filter.username = username;
 
     const messCuts = await MessCut.find(filter).sort({ createdAt: -1 });
 
@@ -119,6 +138,11 @@ const rejectMessCut = async (req, res, next) => {
 const getStudentMessCuts = async (req, res, next) => {
   try {
     const { username } = req.params;
+    const requester = req.user;
+
+    if (requester.role === 'student' && requester.username !== username) {
+      throw new AppError('Students can only access their own mess cuts', 403);
+    }
 
     const messCuts = await MessCut.find({ username }).sort({ createdAt: -1 });
 

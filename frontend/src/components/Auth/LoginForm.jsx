@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
-import { storeUser } from '../../services/auth.service';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginUser } from '../../services/auth.service';
+import { useAuth } from '../../hooks/useAuth';
 import '../../styles/LoginForm.css';
 
 // Login form component
 export const LoginForm = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,11 +23,11 @@ export const LoginForm = () => {
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/login', formData);
-      storeUser(response.data.user, response.data.token);
+      const response = await loginUser(formData);
+      login(response.user, response.token);
 
       // Redirect based on role
-      const role = response.data.user.role;
+      const role = response.user.role;
       const paths = {
         student: '/student',
         mess_secretary: '/secretary',
@@ -34,9 +35,9 @@ export const LoginForm = () => {
         warden: '/warden',
       };
 
-      navigate(paths[role] || '/');
+      navigate(paths[role] || '/', { replace: true });
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -81,7 +82,7 @@ export const LoginForm = () => {
         </form>
 
         <p className="signup-link">
-          Don't have an account? <a href="/register">Register here</a>
+          Need an account? <Link to="/access-request">Request through warden office</Link>
         </p>
       </div>
     </div>

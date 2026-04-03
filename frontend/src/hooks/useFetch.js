@@ -15,7 +15,7 @@ export const useFetch = (url) => {
         setData(response.data);
         setError(null);
       } catch (err) {
-        setError(err.response?.data?.error || error.message);
+        setError(err.message || err.response?.data?.error?.message || 'Failed to fetch data');
         setData(null);
       } finally {
         setLoading(false);
