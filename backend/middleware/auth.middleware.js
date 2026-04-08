@@ -1,6 +1,14 @@
 const { verifyToken } = require('../config/jwt');
 const User = require('../models/User');
 
+const invalidTokenResponse = (res) =>
+  res.status(401).json({
+    success: false,
+    message: 'Invalid or expired token',
+  });
+
+const invalidTokenErrorNames = new Set(['TokenExpiredError', 'JsonWebTokenError', 'NotBeforeError']);
+
 // Middleware to verify JWT token
 const authMiddleware = async (req, res, next) => {
   try {
@@ -8,10 +16,7 @@ const authMiddleware = async (req, res, next) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'Authorization token is required',
-        },
+        message: 'Authorization token is required',
       });
     }
 
@@ -20,32 +25,29 @@ const authMiddleware = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({
         success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'Authorization token is required',
-        },
+        message: 'Authorization token is required',
       });
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'Invalid or expired token',
-        },
-      });
+    let decoded;
+    try {
+      decoded = verifyToken(token);
+    } catch (error) {
+      if (invalidTokenErrorNames.has(error.name)) {
+        return invalidTokenResponse(res);
+      }
+      throw error;
+    }
+
+    if (!decoded || !decoded.userId) {
+      return invalidTokenResponse(res);
     }
 
     const user = await User.findById(decoded.userId).select('name username role');
     if (!user) {
       return res.status(401).json({
         success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'User no longer exists',
-        },
+        message: 'User no longer exists',
       });
     }
 
@@ -54,17 +56,12 @@ const authMiddleware = async (req, res, next) => {
       name: user.name,
       username: user.username,
       role: user.role,
+      tokenRole: decoded.role,
     };
 
     next();
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      error: {
-        code: 'UNAUTHORIZED',
-        message: 'Authentication failed',
-      },
-    });
+    next(error);
   }
 };
 

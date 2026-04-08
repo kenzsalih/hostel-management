@@ -2,6 +2,8 @@ node_modules/
 **/node_modules/
 .env
 **/.env
+**/.env.development
+**/.env.production
 **/.env.local
 **/.env.*.local
 dist/

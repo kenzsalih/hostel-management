@@ -1,44 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middleware/auth.middleware');
-const authorize = require('../middleware/authorize.middleware');
+const authorizeRoles = require('../middleware/authorizeRoles.middleware');
 const validateRequest = require('../middleware/validate.middleware');
-const {
-  announcementsCreateValidator,
-  announcementsRoleParamValidator,
-  idParamValidator,
-} = require('../validators/requestValidators');
-const {
-  createAnnouncement,
-  getAllAnnouncements,
-  getAnnouncementsByRole,
-  deleteAnnouncement,
-} = require('../controllers/announcementController');
+const { announcementCreateValidator } = require('../validators/requestValidators');
+const { createAnnouncement, getAllAnnouncements } = require('../controllers/announcementController');
 
-// Create announcement (Mess Secretary, Cook, Warden)
 router.post(
   '/',
-  authMiddleware,
-  authorize(['mess_secretary', 'cook', 'warden']),
-  announcementsCreateValidator,
+  authorizeRoles('mess_secretary'),
+  announcementCreateValidator,
   validateRequest,
   createAnnouncement
 );
 
-// Get all announcements
-router.get('/', authMiddleware, getAllAnnouncements);
-
-// Get announcements by role
-router.get('/role/:role', authMiddleware, announcementsRoleParamValidator, validateRequest, getAnnouncementsByRole);
-
-// Delete announcement
-router.delete(
-  '/:id',
-  authMiddleware,
-  authorize(['mess_secretary', 'warden']),
-  idParamValidator,
-  validateRequest,
-  deleteAnnouncement
-);
+router.get('/', authorizeRoles('student', 'mess_secretary', 'cook', 'warden'), getAllAnnouncements);
 
 module.exports = router;

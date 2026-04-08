@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth.middleware');
-const authorize = require('../middleware/authorize.middleware');
+const authorizeRoles = require('../middleware/authorizeRoles.middleware');
 const validateRequest = require('../middleware/validate.middleware');
-const { allowMessSecretaryUserCreation } = require('../config/env');
 const { loginValidator, createUserValidator } = require('../validators/requestValidators');
 const {
 	registerUser,
@@ -11,10 +10,6 @@ const {
 	loginUser,
 	getCurrentUser,
 } = require('../controllers/authController');
-
-const accountCreatorRoles = allowMessSecretaryUserCreation
-	? ['warden', 'mess_secretary']
-	: ['warden'];
 
 // Public routes
 router.post('/register', registerUser);
@@ -24,7 +19,7 @@ router.post('/login', loginValidator, validateRequest, loginUser);
 router.post(
 	'/users',
 	authMiddleware,
-	authorize(accountCreatorRoles),
+	authorizeRoles('warden'),
 	createUserValidator,
 	validateRequest,
 	createUserByRole

@@ -1,160 +1,191 @@
 const MessCut = require('../models/MessCut');
 const { isValidDateRange } = require('../utils/validators');
 const { AppError } = require('../utils/errors');
+const asyncHandler = require('../middleware/asyncHandler.middleware');
+const { getPagination } = require('../utils/pagination');
 
 // Student: Create mess cut request
-const createMessCut = async (req, res, next) => {
-  try {
-    const { fromDate, toDate } = req.body;
-    const username = req.user.username;
+const createMessCut = asyncHandler(async (req, res) => {
+  const { fromDate, toDate } = req.body;
+  const username = req.user.username;
 
-    if (!fromDate || !toDate) {
-      return res.status(400).json({ error: 'From date and to date are required' });
-    }
+  if (!isValidDateRange(fromDate, toDate)) {
+    throw new AppError('To date must be after from date', 400);
+  }
 
-    if (!isValidDateRange(fromDate, toDate)) {
-      return res.status(400).json({ error: 'To date must be after from date' });
-    }
+  const duplicate = await MessCut.findOne({
+    username,
+    fromDate: new Date(fromDate),
+    toDate: new Date(toDate),
+  });
 
-    const duplicate = await MessCut.findOne({
-      username,
-      fromDate: new Date(fromDate),
-      toDate: new Date(toDate),
-    });
+  if (duplicate) {
+    throw new AppError('Duplicate mess cut request for same date range', 409);
+  }
 
-    if (duplicate) {
-      throw new AppError('Duplicate mess cut request for same date range', 409);
-    }
+  const messCut = new MessCut({
+    username,
+    fromDate: new Date(fromDate),
+    toDate: new Date(toDate),
+  });
 
-    const messCut = new MessCut({
-      username,
-      fromDate: new Date(fromDate),
-      toDate: new Date(toDate),
-    });
+  await messCut.save();
 
-    await messCut.save();
-
-    res.status(201).json({
+  res.status(201).json({
+    success: true,
+    data: {
       message: 'Mess cut request created',
       messCut,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    },
+    message: 'Mess cut request created',
+    messCut,
+  });
+});
 
 // Get all mess cuts (with filter by status, username)
-const getAllMessCuts = async (req, res, next) => {
-  try {
-    const { status, username } = req.query;
-    const requester = req.user;
+const getAllMessCuts = asyncHandler(async (req, res) => {
+  const { status, username } = req.query;
+  const requester = req.user;
+  const { page, limit, skip, maxLimit } = getPagination(req.query);
 
-    const filter = {};
+  const filter = {};
 
-    if (requester.role === 'student') {
-      filter.username = requester.username;
-    }
-
-    if (username && requester.role !== 'student') {
-      filter.username = username;
-    }
-
-    if (status) filter.status = status;
-
-    const messCuts = await MessCut.find(filter).sort({ createdAt: -1 });
-
-    res.json({
-      count: messCuts.length,
-      messCuts,
-    });
-  } catch (error) {
-    next(error);
+  if (requester.role === 'student') {
+    filter.username = requester.username;
   }
-};
+
+  if (username && requester.role !== 'student') {
+    filter.username = username;
+  }
+
+  if (status) {
+    filter.status = status;
+  }
+
+  const [messCuts, total] = await Promise.all([
+    MessCut.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    MessCut.countDocuments(filter),
+  ]);
+
+  res.json({
+    success: true,
+    data: {
+      items: messCuts,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+        maxLimit,
+      },
+      filters: {
+        status: status || null,
+        username: filter.username || null,
+      },
+    },
+    count: messCuts.length,
+    messCuts,
+  });
+});
 
 // Mess Secretary: Approve mess cut
-const approveMessCut = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const secretaryUsername = req.user.username;
+const approveMessCut = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const secretaryUsername = req.user.username;
 
-    const messCut = await MessCut.findById(id);
-    if (!messCut) {
-      return res.status(404).json({ error: 'Mess cut not found' });
-    }
+  const messCut = await MessCut.findById(id);
+  if (!messCut) {
+    throw new AppError('Mess cut not found', 404);
+  }
 
-    if (messCut.status !== 'pending') {
-      return res.status(400).json({ error: 'Only pending requests can be approved' });
-    }
+  if (messCut.status !== 'pending') {
+    throw new AppError('Only pending requests can be approved', 400);
+  }
 
-    messCut.status = 'approved';
-    messCut.approvedBy = secretaryUsername;
-    messCut.approvedOn = new Date();
+  messCut.status = 'approved';
+  messCut.approvedBy = secretaryUsername;
+  messCut.approvedOn = new Date();
 
-    await messCut.save();
+  await messCut.save();
 
-    res.json({
+  res.json({
+    success: true,
+    data: {
       message: 'Mess cut approved',
       messCut,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    },
+    message: 'Mess cut approved',
+    messCut,
+  });
+});
 
 // Mess Secretary: Reject mess cut
-const rejectMessCut = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { rejectionReason } = req.body;
-    const secretaryUsername = req.user.username;
+const rejectMessCut = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { rejectionReason } = req.body;
+  const secretaryUsername = req.user.username;
 
-    const messCut = await MessCut.findById(id);
-    if (!messCut) {
-      return res.status(404).json({ error: 'Mess cut not found' });
-    }
+  const messCut = await MessCut.findById(id);
+  if (!messCut) {
+    throw new AppError('Mess cut not found', 404);
+  }
 
-    if (messCut.status !== 'pending') {
-      return res.status(400).json({ error: 'Only pending requests can be rejected' });
-    }
+  if (messCut.status !== 'pending') {
+    throw new AppError('Only pending requests can be rejected', 400);
+  }
 
-    messCut.status = 'rejected';
-    messCut.rejectionReason = rejectionReason || 'No reason provided';
-    messCut.approvedBy = secretaryUsername;
-    messCut.approvedOn = new Date();
+  messCut.status = 'rejected';
+  messCut.rejectionReason = rejectionReason || 'No reason provided';
+  messCut.approvedBy = secretaryUsername;
+  messCut.approvedOn = new Date();
 
-    await messCut.save();
+  await messCut.save();
 
-    res.json({
+  res.json({
+    success: true,
+    data: {
       message: 'Mess cut rejected',
       messCut,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    },
+    message: 'Mess cut rejected',
+    messCut,
+  });
+});
 
 // Get mess cuts for a specific student
-const getStudentMessCuts = async (req, res, next) => {
-  try {
-    const { username } = req.params;
-    const requester = req.user;
+const getStudentMessCuts = asyncHandler(async (req, res) => {
+  const { username } = req.params;
+  const requester = req.user;
+  const { page, limit, skip, maxLimit } = getPagination(req.query);
 
-    if (requester.role === 'student' && requester.username !== username) {
-      throw new AppError('Students can only access their own mess cuts', 403);
-    }
-
-    const messCuts = await MessCut.find({ username }).sort({ createdAt: -1 });
-
-    res.json({
-      username,
-      count: messCuts.length,
-      messCuts,
-    });
-  } catch (error) {
-    next(error);
+  if (requester.role === 'student' && requester.username !== username) {
+    throw new AppError('Students can only access their own mess cuts', 403);
   }
-};
+
+  const filter = { username };
+  const [messCuts, total] = await Promise.all([
+    MessCut.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    MessCut.countDocuments(filter),
+  ]);
+
+  res.json({
+    success: true,
+    data: {
+      username,
+      items: messCuts,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+        maxLimit,
+      },
+    },
+    username,
+    count: messCuts.length,
+    messCuts,
+  });
+});
 
 module.exports = {
   createMessCut,

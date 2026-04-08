@@ -1,21 +1,28 @@
-import api from './api';
+import api from '../utils/api';
 
 // Login user
 export const loginUser = async (credentials) => {
-  const response = await api.post('/auth/login', credentials);
-  return response.data;
+  const payload = await api.post('/auth/login', credentials);
+  const envelope = payload?.data || payload;
+
+  return {
+    token: envelope?.token,
+    user: envelope?.user,
+    message: envelope?.message || payload?.message,
+  };
 };
 
 // Authorized account creation (warden or allowed mess secretary only)
 export const createUserByRole = async (userData) => {
-  const response = await api.post('/auth/users', userData);
-  return response.data;
+  const payload = await api.post('/auth/users', userData);
+  return payload?.data || payload;
 };
 
 // Get current user
 export const getCurrentUser = async () => {
-  const response = await api.get('/auth/me');
-  return response.data;
+  const payload = await api.get('/auth/me');
+  const envelope = payload?.data || payload;
+  return envelope?.user || envelope;
 };
 
 export const clearAuthStorage = () => {

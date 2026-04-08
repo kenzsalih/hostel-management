@@ -1,9 +1,16 @@
 const { body, param, query } = require('express-validator');
 
 const roleValues = ['student', 'mess_secretary', 'cook', 'warden'];
-const groceryUnits = ['kg', 'liter', 'piece', 'box', 'dozen'];
-const groceryCategories = ['vegetables', 'fruits', 'grains', 'dairy', 'meat', 'spices', 'oil', 'other'];
-const announcementPriorities = ['low', 'medium', 'high'];
+const monthPattern = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+const monthQueryValidator = [
+  query('month').matches(monthPattern).withMessage('month must be in format YYYY-MM'),
+];
+
+const paginationValidator = [
+  query('page').optional().isInt({ min: 1 }).withMessage('page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('limit must be 1-100'),
+];
 
 const createUserValidator = [
   body('name').trim().isLength({ min: 2, max: 80 }).withMessage('Name must be 2-80 characters'),
@@ -31,70 +38,52 @@ const idParamValidator = [
   param('id').isMongoId().withMessage('Invalid id parameter'),
 ];
 
-const usernameParamValidator = [
-  param('username')
-    .trim()
-    .toLowerCase()
-    .matches(/^[a-zA-Z0-9_]{3,20}$/)
-    .withMessage('Invalid username parameter'),
-];
-
-const messCutCreateValidator = [
+const messCutApplyValidator = [
   body('fromDate').isISO8601().withMessage('fromDate must be a valid date'),
   body('toDate').isISO8601().withMessage('toDate must be a valid date'),
 ];
 
-const messCutRejectValidator = [
-  body('rejectionReason').optional({ values: 'falsy' }).trim().isLength({ max: 300 }),
-];
-
-const groceriesCreateValidator = [
-  body('itemName').trim().isLength({ min: 2, max: 120 }).withMessage('Item name must be 2-120 characters'),
-  body('quantity').isFloat({ gt: 0 }).withMessage('Quantity must be greater than 0'),
-  body('unit').optional().isIn(groceryUnits).withMessage('Invalid grocery unit'),
-  body('price').isFloat({ gt: 0 }).withMessage('Price must be greater than 0'),
-  body('purchaseLocation')
+const expenseCreateValidator = [
+  body('amount').isFloat({ gt: 0 }).withMessage('amount must be greater than 0'),
+  body('category').trim().isLength({ min: 2, max: 80 }).withMessage('category must be 2-80 characters'),
+  body('description')
     .trim()
-    .isLength({ min: 2, max: 120 })
-    .withMessage('Purchase location must be 2-120 characters'),
-  body('category').optional().isIn(groceryCategories).withMessage('Invalid category'),
+    .isLength({ min: 3, max: 500 })
+    .withMessage('description must be 3-500 characters'),
+  body('date').optional({ values: 'falsy' }).isISO8601().withMessage('date must be a valid date'),
 ];
 
-const groceriesDateRangeValidator = [
-  query('startDate').isISO8601().withMessage('startDate must be valid date'),
-  query('endDate').isISO8601().withMessage('endDate must be valid date'),
+const announcementCreateValidator = [
+  body('title').trim().isLength({ min: 3, max: 150 }).withMessage('title must be 3-150 characters'),
+  body('content').trim().isLength({ min: 5, max: 2000 }).withMessage('content must be 5-2000 characters'),
 ];
 
-const announcementsCreateValidator = [
-  body('title').trim().isLength({ min: 3, max: 150 }).withMessage('Title must be 3-150 characters'),
-  body('message').trim().isLength({ min: 5, max: 2000 }).withMessage('Message must be 5-2000 characters'),
-  body('priority').optional().isIn(announcementPriorities).withMessage('Invalid priority'),
-  body('expiryDate').optional({ values: 'falsy' }).isISO8601().withMessage('Invalid expiryDate'),
+const billingGenerateValidator = [
+  body('month').matches(monthPattern).withMessage('month must be in format YYYY-MM'),
 ];
 
-const announcementsRoleParamValidator = [
-  param('role').isIn(['mess_secretary', 'cook', 'warden']).withMessage('Invalid role parameter'),
+const billingPayValidator = [
+  body('billId').isMongoId().withMessage('billId must be a valid Mongo ObjectId'),
 ];
 
-const generateBillsValidator = [
-  body('month')
-    .trim()
-    .matches(/^[A-Za-z]+-\d{4}$/)
-    .withMessage('Month must be in format Month-YYYY, e.g. March-2026'),
-  body('startDate').isISO8601().withMessage('startDate must be valid date'),
-  body('endDate').isISO8601().withMessage('endDate must be valid date'),
+const billListValidator = [
+  ...paginationValidator,
+  query('month')
+    .optional({ values: 'falsy' })
+    .matches(monthPattern)
+    .withMessage('month must be in format YYYY-MM'),
 ];
 
 module.exports = {
   createUserValidator,
   loginValidator,
   idParamValidator,
-  usernameParamValidator,
-  messCutCreateValidator,
-  messCutRejectValidator,
-  groceriesCreateValidator,
-  groceriesDateRangeValidator,
-  announcementsCreateValidator,
-  announcementsRoleParamValidator,
-  generateBillsValidator,
+  paginationValidator,
+  monthQueryValidator,
+  messCutApplyValidator,
+  expenseCreateValidator,
+  announcementCreateValidator,
+  billingGenerateValidator,
+  billingPayValidator,
+  billListValidator,
 };

@@ -18,14 +18,14 @@ const WardenDashboard = () => {
           <Link to="/warden/bills" className="btn btn-primary">Manage Bills</Link>
         </Card>
 
-        <Card title="📈 Reports">
-          <p>View detailed expense and income reports.</p>
-          <Link to="/warden/reports" className="btn btn-primary">View Reports</Link>
-        </Card>
-
         <Card title="👥 Manage Users">
           <p>Oversee all user accounts and permissions.</p>
           <Link to="/warden/users" className="btn btn-primary">Manage Users</Link>
+        </Card>
+
+        <Card title="📢 Announcements">
+          <p>View and monitor posted announcements.</p>
+          <Link to="/announcements" className="btn btn-primary">Open Feed</Link>
         </Card>
       </div>
     </div>

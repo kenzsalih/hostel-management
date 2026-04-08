@@ -1,110 +1,147 @@
 const Grocery = require('../models/Grocery');
+const { AppError } = require('../utils/errors');
+const asyncHandler = require('../middleware/asyncHandler.middleware');
+const { getPagination } = require('../utils/pagination');
 
 // Mess Secretary: Add grocery purchase
-const addGrocery = async (req, res, next) => {
-  try {
-    const { itemName, quantity, unit, price, purchaseLocation, category } = req.body;
-    const enteredBy = req.user.username;
+const addGrocery = asyncHandler(async (req, res) => {
+  const { itemName, quantity, unit, price, purchaseLocation, category } = req.body;
+  const enteredBy = req.user.username;
 
-    if (!itemName || !quantity || !price || !purchaseLocation) {
-      return res.status(400).json({ error: 'All required fields must be provided' });
-    }
+  const grocery = new Grocery({
+    itemName,
+    quantity,
+    unit: unit || 'kg',
+    price,
+    purchaseLocation,
+    enteredBy,
+    category: category || 'other',
+    date: new Date(),
+  });
 
-    const grocery = new Grocery({
-      itemName,
-      quantity,
-      unit: unit || 'kg',
-      price,
-      purchaseLocation,
-      enteredBy,
-      category: category || 'other',
-      date: new Date(),
-    });
+  await grocery.save();
 
-    await grocery.save();
-
-    res.status(201).json({
+  res.status(201).json({
+    success: true,
+    data: {
       message: 'Grocery added successfully',
       grocery,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    },
+    message: 'Grocery added successfully',
+    grocery,
+  });
+});
 
 // Get all groceries with filters
-const getAllGroceries = async (req, res, next) => {
-  try {
-    const { category, startDate, endDate } = req.query;
+const getAllGroceries = asyncHandler(async (req, res) => {
+  const { category, startDate, endDate } = req.query;
+  const { page, limit, skip, maxLimit } = getPagination(req.query);
 
-    const filter = {};
-    if (category) filter.category = category;
-
-    if (startDate || endDate) {
-      filter.date = {};
-      if (startDate) filter.date.$gte = new Date(startDate);
-      if (endDate) filter.date.$lte = new Date(endDate);
-    }
-
-    const groceries = await Grocery.find(filter).sort({ date: -1 });
-
-    res.json({
-      count: groceries.length,
-      groceries,
-    });
-  } catch (error) {
-    next(error);
+  const filter = {};
+  if (category) {
+    filter.category = category;
   }
-};
+
+  if (startDate || endDate) {
+    filter.date = {};
+    if (startDate) filter.date.$gte = new Date(startDate);
+    if (endDate) filter.date.$lte = new Date(endDate);
+  }
+
+  const [groceries, total] = await Promise.all([
+    Grocery.find(filter).sort({ date: -1 }).skip(skip).limit(limit),
+    Grocery.countDocuments(filter),
+  ]);
+
+  res.json({
+    success: true,
+    data: {
+      items: groceries,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+        maxLimit,
+      },
+    },
+    count: groceries.length,
+    groceries,
+  });
+});
 
 // Get groceries for a date range with total expense
-const getGroceriesByDateRange = async (req, res, next) => {
-  try {
-    const { startDate, endDate } = req.query;
+const getGroceriesByDateRange = asyncHandler(async (req, res) => {
+  const { startDate, endDate } = req.query;
+  const { page, limit, skip, maxLimit } = getPagination(req.query);
 
-    if (!startDate || !endDate) {
-      return res.status(400).json({ error: 'Start date and end date are required' });
-    }
+  const rangeFilter = {
+    date: {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
+    },
+  };
 
-    const groceries = await Grocery.find({
-      date: {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate),
+  const [groceries, total, aggregateTotal] = await Promise.all([
+    Grocery.find(rangeFilter).sort({ date: -1 }).skip(skip).limit(limit),
+    Grocery.countDocuments(rangeFilter),
+    Grocery.aggregate([
+      { $match: rangeFilter },
+      {
+        $group: {
+          _id: null,
+          totalExpense: {
+            $sum: { $multiply: ['$price', '$quantity'] },
+          },
+        },
       },
-    }).sort({ date: -1 });
+    ]),
+  ]);
 
-    const totalExpense = groceries.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalExpense = aggregateTotal[0]?.totalExpense || 0;
 
-    res.json({
+  res.json({
+    success: true,
+    data: {
       startDate,
       endDate,
-      count: groceries.length,
       totalExpense: totalExpense.toFixed(2),
-      groceries,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+      items: groceries,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit) || 1,
+        maxLimit,
+      },
+    },
+    startDate,
+    endDate,
+    count: groceries.length,
+    totalExpense: totalExpense.toFixed(2),
+    groceries,
+  });
+});
 
 // Delete grocery (Mess Secretary)
-const deleteGrocery = async (req, res, next) => {
-  try {
-    const { id } = req.params;
+const deleteGrocery = asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
-    const grocery = await Grocery.findByIdAndDelete(id);
-    if (!grocery) {
-      return res.status(404).json({ error: 'Grocery not found' });
-    }
+  const grocery = await Grocery.findByIdAndDelete(id);
+  if (!grocery) {
+    throw new AppError('Grocery not found', 404);
+  }
 
-    res.json({
+  res.json({
+    success: true,
+    data: {
       message: 'Grocery deleted successfully',
       grocery,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    },
+    message: 'Grocery deleted successfully',
+    grocery,
+  });
+});
 
 module.exports = {
   addGrocery,

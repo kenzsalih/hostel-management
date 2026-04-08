@@ -7,36 +7,21 @@ const announcementSchema = new mongoose.Schema(
       required: [true, 'Title is required'],
       trim: true,
     },
-    message: {
+    content: {
       type: String,
-      required: [true, 'Message is required'],
+      required: [true, 'Content is required'],
+      trim: true,
     },
-    date: {
-      type: Date,
-      default: Date.now,
-    },
-    postedBy: {
-      type: String, // Username of the person who posted
-      required: [true, 'Posted by is required'],
-    },
-    role: {
-      type: String,
-      enum: ['mess_secretary', 'cook', 'warden'],
-      required: [true, 'Role is required'],
-    },
-    priority: {
-      type: String,
-      enum: ['low', 'medium', 'high'],
-      default: 'medium',
-    },
-    expiryDate: {
-      type: Date, // Optional: when this announcement expires
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'createdBy is required'],
+      index: true,
     },
   },
   { timestamps: true }
 );
 
-announcementSchema.index({ role: 1, date: -1 });
-announcementSchema.index({ expiryDate: 1 });
+announcementSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Announcement', announcementSchema);

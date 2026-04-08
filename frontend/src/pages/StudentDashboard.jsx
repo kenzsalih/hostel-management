@@ -22,11 +22,6 @@ const StudentDashboard = () => {
           <p>Latest updates from mess management.</p>
           <Link to="/announcements" className="btn btn-primary">View All</Link>
         </Card>
-
-        <Card title="💸 Expenses">
-          <p>View current mess expenses breakdown.</p>
-          <Link to="/student/expenses" className="btn btn-primary">View Expenses</Link>
-        </Card>
       </div>
     </div>
   );

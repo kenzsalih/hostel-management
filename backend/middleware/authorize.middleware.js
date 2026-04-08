@@ -1,5 +1,7 @@
-const roleAuth = require('./roleAuth.middleware');
+const authorizeRoles = require('./authorizeRoles.middleware');
 
-const authorize = (allowedRoles = []) => roleAuth(allowedRoles);
+const authorize = (allowedRoles = []) => authorizeRoles(...allowedRoles);
 
 module.exports = authorize;
+module.exports.allowRoles = authorizeRoles;
+module.exports.authorizeRoles = authorizeRoles;

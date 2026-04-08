@@ -10,7 +10,15 @@ import StudentDashboard from './pages/StudentDashboard';
 import MessecretaryDashboard from './pages/MessecretaryDashboard';
 import CookDashboard from './pages/CookDashboard';
 import WardenDashboard from './pages/WardenDashboard';
-import FeaturePlaceholder from './pages/FeaturePlaceholder';
+import ApplyMessCut from './pages/ApplyMessCut';
+import MyBills from './pages/MyBills';
+import Expenses from './pages/Expenses';
+import MessCutApproval from './pages/MessCutApproval';
+import Announcements from './pages/Announcements';
+import GenerateBills from './pages/GenerateBills';
+import MealCount from './pages/MealCount';
+import ManageUsers from './pages/ManageUsers';
+import WardenExpenses from './pages/WardenExpenses';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import AccountRequestPage from './pages/AccountRequestPage';
 import NotFound from './pages/NotFound';
@@ -81,10 +89,7 @@ function App() {
             path="/student/messcut"
             element={
               <ProtectedRoute allowedRoles={['student']}>
-                <FeaturePlaceholder
-                  title="My Mess Cut Requests"
-                  description="Track requests and submit new mess cuts from this page."
-                />
+                <ApplyMessCut />
               </ProtectedRoute>
             }
           />
@@ -92,21 +97,7 @@ function App() {
             path="/student/bills"
             element={
               <ProtectedRoute allowedRoles={['student']}>
-                <FeaturePlaceholder
-                  title="My Bills"
-                  description="View current and historical bills with payment status."
-                />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student/expenses"
-            element={
-              <ProtectedRoute allowedRoles={['student']}>
-                <FeaturePlaceholder
-                  title="Shared Expense Snapshot"
-                  description="Inspect breakdown of mess expenses and trends."
-                />
+                <MyBills />
               </ProtectedRoute>
             }
           />
@@ -124,21 +115,7 @@ function App() {
             path="/secretary/messcuts"
             element={
               <ProtectedRoute allowedRoles={['mess_secretary']}>
-                <FeaturePlaceholder
-                  title="Mess Cut Approval Queue"
-                  description="Approve or reject student requests with clear status tracking."
-                />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/secretary/groceries"
-            element={
-              <ProtectedRoute allowedRoles={['mess_secretary']}>
-                <FeaturePlaceholder
-                  title="Grocery Entries"
-                  description="Add grocery purchases and maintain expense records."
-                />
+                <MessCutApproval />
               </ProtectedRoute>
             }
           />
@@ -146,21 +123,15 @@ function App() {
             path="/secretary/expenses"
             element={
               <ProtectedRoute allowedRoles={['mess_secretary']}>
-                <FeaturePlaceholder
-                  title="Expense Control"
-                  description="Analyze purchase and category-wise expense performance."
-                />
+                <Expenses />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/secretary/announcement"
+            path="/announcements"
             element={
-              <ProtectedRoute allowedRoles={['mess_secretary']}>
-                <FeaturePlaceholder
-                  title="Publish Announcement"
-                  description="Post notices visible to the selected hostel audience."
-                />
+              <ProtectedRoute allowedRoles={['student', 'mess_secretary', 'cook', 'warden']}>
+                <Announcements />
               </ProtectedRoute>
             }
           />
@@ -175,58 +146,10 @@ function App() {
             }
           />
           <Route
-            path="/cook/messcuts"
-            element={
-              <ProtectedRoute allowedRoles={['cook']}>
-                <FeaturePlaceholder
-                  title="Approved Mess Cuts"
-                  description="Use approved mess cuts to plan meal quantities accurately."
-                />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cook/planning"
-            element={
-              <ProtectedRoute allowedRoles={['cook']}>
-                <FeaturePlaceholder
-                  title="Meal Planning"
-                  description="Design daily and weekly menus using available ingredients."
-                />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/cook/mealcount"
             element={
               <ProtectedRoute allowedRoles={['cook']}>
-                <FeaturePlaceholder
-                  title="Today's Meal Count"
-                  description="Review expected meal participation for each service."
-                />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cook/groceries"
-            element={
-              <ProtectedRoute allowedRoles={['cook']}>
-                <FeaturePlaceholder
-                  title="Kitchen Inventory View"
-                  description="Track available grocery records for kitchen operations."
-                />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/announcements"
-            element={
-              <ProtectedRoute allowedRoles={['student', 'mess_secretary', 'cook', 'warden']}>
-                <FeaturePlaceholder
-                  title="Announcements"
-                  description="Read the latest notices from management and kitchen staff."
-                />
+                <MealCount />
               </ProtectedRoute>
             }
           />
@@ -244,10 +167,7 @@ function App() {
             path="/warden/expenses"
             element={
               <ProtectedRoute allowedRoles={['warden']}>
-                <FeaturePlaceholder
-                  title="Expense Oversight"
-                  description="Review all expense data with monthly and category controls."
-                />
+                <WardenExpenses />
               </ProtectedRoute>
             }
           />
@@ -255,21 +175,7 @@ function App() {
             path="/warden/bills"
             element={
               <ProtectedRoute allowedRoles={['warden']}>
-                <FeaturePlaceholder
-                  title="Bill Generation"
-                  description="Generate monthly student bills and track payment status."
-                />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/warden/reports"
-            element={
-              <ProtectedRoute allowedRoles={['warden']}>
-                <FeaturePlaceholder
-                  title="Operational Reports"
-                  description="Analyze spending and participation trends for decision making."
-                />
+                <GenerateBills />
               </ProtectedRoute>
             }
           />
@@ -277,10 +183,7 @@ function App() {
             path="/warden/users"
             element={
               <ProtectedRoute allowedRoles={['warden']}>
-                <FeaturePlaceholder
-                  title="User Administration"
-                  description="Create and manage verified user accounts by role."
-                />
+                <ManageUsers />
               </ProtectedRoute>
             }
           />

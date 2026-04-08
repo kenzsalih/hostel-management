@@ -38,6 +38,11 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
   },
   { timestamps: true }
 );
@@ -45,6 +50,7 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true, sparse: true });
 userSchema.index({ role: 1 });
+userSchema.index({ role: 1, isActive: 1 });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

@@ -13,19 +13,9 @@ const CookDashboard = () => {
           <Link to="/cook/mealcount" className="btn btn-primary">View Today</Link>
         </Card>
 
-        <Card title="✂️ Active Mess Cuts">
-          <p>Check approved mess cuts for planning.</p>
-          <Link to="/cook/messcuts" className="btn btn-primary">View Cuts</Link>
-        </Card>
-
-        <Card title="🛒 Grocery Items">
-          <p>Available ingredients for meal planning.</p>
-          <Link to="/cook/groceries" className="btn btn-primary">View Items</Link>
-        </Card>
-
-        <Card title="📋 Meal Planning">
-          <p>Plan upcoming meals based on available items.</p>
-          <Link to="/cook/planning" className="btn btn-primary">Plan Meals</Link>
+        <Card title="📢 Announcements">
+          <p>Read daily notices from mess management.</p>
+          <Link to="/announcements" className="btn btn-primary">View Updates</Link>
         </Card>
       </div>
     </div>

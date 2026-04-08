@@ -13,11 +13,6 @@ const MessecretaryDashboard = () => {
           <Link to="/secretary/messcuts" className="btn btn-primary">Manage Requests</Link>
         </Card>
 
-        <Card title="🛒 Add Groceries">
-          <p>Record grocery purchases and expenses.</p>
-          <Link to="/secretary/groceries" className="btn btn-primary">Add Items</Link>
-        </Card>
-
         <Card title="💸 Track Expenses">
           <p>Monitor total mess expenses.</p>
           <Link to="/secretary/expenses" className="btn btn-primary">View Expenses</Link>
@@ -25,7 +20,7 @@ const MessecretaryDashboard = () => {
 
         <Card title="📢 Post Announcement">
           <p>Create announcements for mess members.</p>
-          <Link to="/secretary/announcement" className="btn btn-primary">Post New</Link>
+          <Link to="/announcements" className="btn btn-primary">Post New</Link>
         </Card>
       </div>
     </div>

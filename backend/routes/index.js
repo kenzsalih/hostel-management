@@ -1,18 +1,23 @@
 const express = require('express');
 const router = express.Router();
 
-// Import all route modules
 const authRoutes = require('./auth.routes');
-const messcutsRoutes = require('./messcuts.routes');
-const groceriesRoutes = require('./groceries.routes');
 const announcementsRoutes = require('./announcements.routes');
-const billsRoutes = require('./bills.routes');
+const messCutRoutes = require('./messCut.routes');
+const expensesRoutes = require('./expenses.routes');
+const billingRoutes = require('./billing.routes');
+const cookRoutes = require('./cook.routes');
+const authMiddleware = require('../middleware/auth.middleware');
+const { authRateLimiter, apiRateLimiter } = require('../middleware/rateLimit.middleware');
 
-// Register routes
-router.use('/auth', authRoutes);
-router.use('/messcuts', messcutsRoutes);
-router.use('/groceries', groceriesRoutes);
+router.use('/auth', authRateLimiter, authRoutes);
+router.use(authMiddleware);
+router.use(apiRateLimiter);
+
 router.use('/announcements', announcementsRoutes);
-router.use('/bills', billsRoutes);
+router.use('/mess-cut', messCutRoutes);
+router.use('/expenses', expensesRoutes);
+router.use('/billing', billingRoutes);
+router.use('/cook', cookRoutes);
 
 module.exports = router;

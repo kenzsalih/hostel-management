@@ -1,3 +1,6 @@
+const logger = require('../utils/logger');
+const { nodeEnv } = require('../config/env');
+
 // Global error handler middleware (use at the very end)
 const errorHandler = (error, req, res, next) => {
   const status = error.statusCode || error.status || 500;
@@ -31,18 +34,41 @@ const errorHandler = (error, req, res, next) => {
     details = error.errors;
   }
 
-  if (status >= 500) {
-    console.error('Error:', error);
+  if (
+    ['ECONNREFUSED', 'PROTOCOL_CONNECTION_LOST', 'ER_ACCESS_DENIED_ERROR', 'ER_BAD_DB_ERROR'].includes(
+      error.code
+    )
+  ) {
+    message = 'Database service unavailable';
+    code = 'DATABASE_UNAVAILABLE';
   }
 
-  res.status(status).json({
-    success: false,
-    error: {
+  const safeStatus = code === 'DATABASE_UNAVAILABLE' ? 503 : status;
+
+  if (safeStatus >= 500) {
+    logger.error('Unhandled request error', {
+      requestId: req.id,
+      status: safeStatus,
       code,
-      message,
-      ...(details ? { details } : {}),
-    },
-  });
+      method: req.method,
+      path: req.originalUrl,
+      error: error.message,
+      stack: error.stack,
+    });
+  }
+
+  const response = {
+    success: false,
+    message,
+    code,
+    ...(details ? { details } : {}),
+  };
+
+  if (nodeEnv !== 'production' && safeStatus >= 500) {
+    response.stack = error.stack;
+  }
+
+  res.status(safeStatus).json(response);
 };
 
 module.exports = errorHandler;

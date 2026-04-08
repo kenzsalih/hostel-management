@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../services/api';
+import api from '../utils/api';
 
 // Hook to fetch data from API
 export const useFetch = (url) => {
@@ -12,10 +12,10 @@ export const useFetch = (url) => {
       try {
         setLoading(true);
         const response = await api.get(url);
-        setData(response.data);
+        setData(response?.data || response);
         setError(null);
       } catch (err) {
-        setError(err.message || err.response?.data?.error?.message || 'Failed to fetch data');
+        setError(err.message || 'Failed to fetch data');
         setData(null);
       } finally {
         setLoading(false);

@@ -15,13 +15,7 @@ const generateToken = (user) => {
 };
 
 // Verify JWT token
-const verifyToken = (token) => {
-  try {
-    return jwt.verify(token, jwtSecret);
-  } catch (error) {
-    return null;
-  }
-};
+const verifyToken = (token) => jwt.verify(token, jwtSecret);
 
 module.exports = {
   generateToken,

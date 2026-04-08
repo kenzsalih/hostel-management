@@ -8,14 +8,11 @@ const validateRequest = (req, res, next) => {
 
   return res.status(400).json({
     success: false,
-    error: {
-      code: 'VALIDATION_ERROR',
-      message: 'Request validation failed',
-      details: result.array().map((item) => ({
-        field: item.path,
-        message: item.msg,
-      })),
-    },
+    message: 'Request validation failed',
+    details: result.array().map((item) => ({
+      field: item.path,
+      message: item.msg,
+    })),
   });
 };
 

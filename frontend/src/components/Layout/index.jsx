@@ -26,31 +26,24 @@ export const Header = ({ user, onLogout }) => {
 export const Sidebar = ({ role }) => {
   const menuItems = {
     student: [
-      { label: 'Dashboard', path: '/student' },
       { label: 'Apply Mess Cut', path: '/student/messcut' },
       { label: 'My Bills', path: '/student/bills' },
       { label: 'Announcements', path: '/announcements' },
     ],
     mess_secretary: [
-      { label: 'Dashboard', path: '/secretary' },
-      { label: 'Mess Cuts', path: '/secretary/messcuts' },
-      { label: 'Add Groceries', path: '/secretary/groceries' },
+      { label: 'Mess Cut Approval', path: '/secretary/messcuts' },
       { label: 'Expenses', path: '/secretary/expenses' },
-      { label: 'Post Announcement', path: '/secretary/announcement' },
+      { label: 'Announcements', path: '/announcements' },
     ],
     cook: [
-      { label: 'Dashboard', path: '/cook' },
-      { label: 'Mess Cuts', path: '/cook/messcuts' },
-      { label: 'Meal Planning', path: '/cook/planning' },
       { label: "Today's Meal Count", path: '/cook/mealcount' },
-      { label: 'Groceries', path: '/cook/groceries' },
+      { label: 'Announcements', path: '/announcements' },
     ],
     warden: [
-      { label: 'Dashboard', path: '/warden' },
-      { label: 'Monitor Expenses', path: '/warden/expenses' },
       { label: 'Generate Bills', path: '/warden/bills' },
-      { label: 'Reports', path: '/warden/reports' },
+      { label: 'Expenses', path: '/warden/expenses' },
       { label: 'Manage Users', path: '/warden/users' },
+      { label: 'Announcements', path: '/announcements' },
     ],
   };
 
