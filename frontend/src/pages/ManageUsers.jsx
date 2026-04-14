@@ -72,7 +72,7 @@ const ManageUsers = () => {
           </select>
         </div>
 
-        <button className="btn btn-primary" type="submit" disabled={submitting}>
+        <button className="btn btn-primary create-user-btn" type="submit" disabled={submitting}>
           {submitting ? 'Creating...' : 'Create User'}
         </button>
       </form>

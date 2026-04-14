@@ -2,14 +2,17 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 
 // Header component
-export const Header = ({ user, onLogout }) => {
+export const Header = ({ user, onLogout, dashboardPath }) => {
   return (
     <header className="header-shell">
       <div className="header-content-wrap">
-        <h1 className="header-title">Hostel Mess Command Center</h1>
+        <h1 className="header-title">Wisdom Homes Hostel</h1>
         <div className="header-actions-wrap">
           {user && (
             <>
+              <NavLink to={dashboardPath || '/'} className="dashboard-button">
+                Dashboard
+              </NavLink>
               <span className="user-name-chip">{user.name}</span>
               <button onClick={onLogout} className="danger-button" type="button">
                 Logout

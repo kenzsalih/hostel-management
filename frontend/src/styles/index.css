@@ -53,6 +53,22 @@ h6 {
   gap: 0.75rem;
 }
 
+.dashboard-button {
+  background: #fff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.46rem 0.75rem;
+  text-decoration: none;
+}
+
+.dashboard-button:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
 .user-name-chip {
   border-radius: 999px;
   background: #faebd3;
@@ -184,10 +200,13 @@ h6 {
   cursor: pointer;
 }
 
+
 .btn-primary,
 .primary-link {
   background: #be6d15;
   color: #fff;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
 }
 
 .btn-primary:hover,
@@ -243,6 +262,34 @@ h6 {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0.9rem;
   margin-bottom: 1.1rem;
+}
+
+.mess-cut-form {
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr);
+  align-items: end;
+}
+
+.mess-cut-button-cell {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mess-cut-submit-btn {
+  width: auto;
+  min-width: 150px;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.expense-submit-btn,
+.create-user-btn {
+  justify-self: start;
+  width: auto;
+  min-width: 130px;
+  padding: 0.46rem 0.8rem;
+  font-size: 0.82rem;
 }
 
 .form-group {
@@ -447,6 +494,18 @@ h6 {
   .dashboard,
   .panel {
     padding: 1rem;
+  }
+
+  .mess-cut-form {
+    grid-template-columns: 1fr;
+  }
+
+  .mess-cut-button-cell {
+    justify-content: flex-start;
+  }
+
+  .mess-cut-submit-btn {
+    width: auto;
   }
 
   .btn {

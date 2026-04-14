@@ -57,3 +57,10 @@
     gap: 1rem;
   }
 }
+
+.button-group {
+  align-self: end;
+  width: auto;
+  padding: 8px 16px;
+  justify-self: start;
+}

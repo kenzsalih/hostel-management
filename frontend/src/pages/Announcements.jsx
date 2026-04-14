@@ -11,7 +11,7 @@ const Announcements = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const canCreate = user?.role === 'mess_secretary';
+  const canCreate = ['mess_secretary', 'cook', 'warden'].includes(user?.role);
 
   const fetchAnnouncements = async () => {
     setLoading(true);

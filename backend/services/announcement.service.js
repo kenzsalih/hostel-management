@@ -2,8 +2,9 @@ const Announcement = require('../models/Announcement');
 const { AppError } = require('../utils/errors');
 
 const createAnnouncement = async (payload, actor) => {
-  if (actor?.role !== 'mess_secretary') {
-    throw new AppError('Only mess secretary can create announcements', 403);
+  const allowedRoles = ['mess_secretary', 'cook', 'warden'];
+  if (!allowedRoles.includes(actor?.role)) {
+    throw new AppError('Only mess secretary, cook, or warden can create announcements', 403);
   }
 
   const announcement = await Announcement.create({

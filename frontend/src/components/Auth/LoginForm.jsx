@@ -46,7 +46,7 @@ export const LoginForm = () => {
   return (
     <div className="login-container">
       <div className="login-form">
-        <h2>🔐 Hostel Mess Login</h2>
+        <h2>🔐 Wisdom Homes Hostel Login</h2>
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit}>

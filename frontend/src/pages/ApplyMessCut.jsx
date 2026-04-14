@@ -77,7 +77,7 @@ const ApplyMessCut = () => {
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
 
-      <form className="form-grid" onSubmit={handleSubmit}>
+      <form className="form-grid mess-cut-form" onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="fromDate">From Date</label>
           <input id="fromDate" name="fromDate" type="date" value={formData.fromDate} onChange={handleChange} />
@@ -88,9 +88,16 @@ const ApplyMessCut = () => {
           <input id="toDate" name="toDate" type="date" value={formData.toDate} onChange={handleChange} />
         </div>
 
-        <button className="btn btn-primary" type="submit" disabled={submitting}>
-          {submitting ? 'Submitting...' : 'Submit Request'}
-        </button>
+        <div className="mess-cut-button-cell">
+          <button 
+            className="btn btn-primary mess-cut-submit-btn"
+            type="submit"
+            disabled={submitting}
+          >
+            {submitting ? 'Submitting...' : 'Submit Request'}
+          </button>
+        </div>
+
       </form>
 
       <h2 className="section-title">My Requests</h2>

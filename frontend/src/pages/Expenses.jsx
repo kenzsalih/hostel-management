@@ -99,7 +99,7 @@ const Expenses = () => {
           <label htmlFor="date">Date</label>
           <input id="date" name="date" type="date" value={formData.date} onChange={handleChange} />
         </div>
-        <button className="btn btn-primary" type="submit" disabled={submitting}>
+        <button className="btn btn-primary expense-submit-btn" type="submit" disabled={submitting}>
           {submitting ? 'Saving...' : 'Add Expense'}
         </button>
       </form>

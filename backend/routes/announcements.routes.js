@@ -7,7 +7,7 @@ const { createAnnouncement, getAllAnnouncements } = require('../controllers/anno
 
 router.post(
   '/',
-  authorizeRoles('mess_secretary'),
+  authorizeRoles('mess_secretary', 'cook', 'warden'),
   announcementCreateValidator,
   validateRequest,
   createAnnouncement

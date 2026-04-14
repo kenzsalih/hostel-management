@@ -52,7 +52,7 @@ function App() {
     <Router>
       {isAuth && user && (
         <>
-          <Header user={user} onLogout={handleLogout} />
+          <Header user={user} onLogout={handleLogout} dashboardPath={getDefaultPathForRole(user.role)} />
           <Sidebar role={user.role} />
         </>
       )}
